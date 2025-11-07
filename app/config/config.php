@@ -7,6 +7,6 @@
     define("DB_PASS", "");
 /* Opciones por defect */
     define("DEFAULT_CONTROLLER", "baileController");
-    define("DEFAULT_ACTION", "list");
+    define("DEFAULT_ACTION", "listar");
 
 ?>

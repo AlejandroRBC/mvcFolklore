@@ -1,5 +1,6 @@
 <?php 
     require_once 'app/config/config.php';
+    
     require_once 'app/models/db.php';
 
     // cargar valores default de config.php
@@ -9,8 +10,7 @@
         $_GET["funcion"] = constant("DEFAULT_ACTION");
 
     // Definiar la ruta del controlador dinamicamente
-    $controller_path = 'app/controllers/'.$_GET["controller"].'.php';
-
+    $controller_path = 'app/controllers/'.constant("DEFAULT_CONTROLLER").'.php';
     /* Ver si existe el controlador */
     if(!file_exists($controller_path)) 
         $controller_path = 'controller/'.constant("DEFAULT_CONTROLLER").'.php';
@@ -20,15 +20,16 @@
     $controllerName = $_GET["controller"];
     $controllerDinamico = new $controllerName();
 
-    /* Verificar si existe el metodo en el controlador dinamico */
-    $dataToView["data"] = array();
+    /* Verificar si existe el metodo en el controlador dinamico  y cargar los datos de las sentencias SQL*/
+    $infoParaVer["data"] = array();
     if(method_exists($controllerDinamico,$_GET["funcion"]))
-        $dataToView["data"] = $controllerDinamico->{$_GET["funcion"]}();
+        $infoParaVer["datos"] = $controllerDinamico->{$_GET["funcion"]}();
 
     // Cargar vistas
     require_once 'header.php';
     /* Cargar las vistas de la funciones del controlador dinamico */
-    require_once 'view/'.$controllerDinamico -> view.'.php';
+    require_once 'app/Views/'.$controllerDinamico->view.'.php';
+
     require_once 'footer.php';
 
 ?>
