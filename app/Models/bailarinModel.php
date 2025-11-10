@@ -13,10 +13,14 @@ class bailarinModel{
     
     public function getAllBailarines(){
         $this->getConection();
-        $sql = "SELECT b.*, f.nombre as fraternidad 
+        $sql = "SELECT b.*, 
+                       GROUP_CONCAT(DISTINCT f.nombre SEPARATOR ', ') as fraternidades,
+                       COUNT(DISTINCT f.id_fraternidad) as total_fraternidades
                 FROM ".$this->nombreTabla." b 
                 LEFT JOIN ".$this->tablaPertenece." p ON b.ci_bailarin = p.ci_bailarin 
-                LEFT JOIN fraternidad f ON p.id_fraternidad = f.id_fraternidad";
+                LEFT JOIN fraternidad f ON p.id_fraternidad = f.id_fraternidad
+                GROUP BY b.ci_bailarin
+                ORDER BY b.nombre";
         $stmt = $this->conection->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll();
@@ -28,6 +32,16 @@ class bailarinModel{
         $stmt = $this->conection->prepare($sql);
         $stmt->execute([$ci]);
         return $stmt->fetch();
+    }
+    
+    public function getFraternidadesByBailarin($ci_bailarin){
+        $this->getConection();
+        $sql = "SELECT f.* FROM fraternidad f 
+                INNER JOIN ".$this->tablaPertenece." p ON f.id_fraternidad = p.id_fraternidad 
+                WHERE p.ci_bailarin = ?";
+        $stmt = $this->conection->prepare($sql);
+        $stmt->execute([$ci_bailarin]);
+        return $stmt->fetchAll();
     }
     
     public function createBailarin($data){
@@ -46,6 +60,13 @@ class bailarinModel{
     
     public function deleteBailarin($ci){
         $this->getConection();
+        
+        // Primero eliminar registros relacionados en la tabla pertenece
+        $sqlDeletePertenece = "DELETE FROM ".$this->tablaPertenece." WHERE ci_bailarin = ?";
+        $stmt1 = $this->conection->prepare($sqlDeletePertenece);
+        $stmt1->execute([$ci]);
+        
+        // Luego eliminar el bailarín
         $sql = "DELETE FROM ".$this->nombreTabla." WHERE ci_bailarin = ?";
         $stmt = $this->conection->prepare($sql);
         return $stmt->execute([$ci]);
@@ -53,9 +74,34 @@ class bailarinModel{
     
     public function asignarFraternidad($ci_bailarin, $id_fraternidad){
         $this->getConection();
-        $sql = "INSERT INTO ".$this->tablaPertenece." (ci_bailarin, id_fraternidad) VALUES (?, ?)";
+        // Verificar si ya existe la relación
+        $sqlCheck = "SELECT COUNT(*) FROM ".$this->tablaPertenece." WHERE ci_bailarin = ? AND id_fraternidad = ?";
+        $stmtCheck = $this->conection->prepare($sqlCheck);
+        $stmtCheck->execute([$ci_bailarin, $id_fraternidad]);
+        $exists = $stmtCheck->fetchColumn();
+        
+        if($exists == 0) {
+            $sql = "INSERT INTO ".$this->tablaPertenece." (ci_bailarin, id_fraternidad) VALUES (?, ?)";
+            $stmt = $this->conection->prepare($sql);
+            return $stmt->execute([$ci_bailarin, $id_fraternidad]);
+        }
+        return false;
+    }
+    
+    public function eliminarFraternidad($ci_bailarin, $id_fraternidad){
+        $this->getConection();
+        $sql = "DELETE FROM ".$this->tablaPertenece." WHERE ci_bailarin = ? AND id_fraternidad = ?";
         $stmt = $this->conection->prepare($sql);
         return $stmt->execute([$ci_bailarin, $id_fraternidad]);
+    }
+    
+    public function calcularEdad($fecha_nacimiento){
+        if(empty($fecha_nacimiento)) return null;
+        
+        $nacimiento = new DateTime($fecha_nacimiento);
+        $hoy = new DateTime();
+        $edad = $hoy->diff($nacimiento);
+        return $edad->y;
     }
 }
 ?>

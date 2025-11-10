@@ -15,8 +15,15 @@ class bailarinController{
     
     public function listar(){
         $this->tituloVista = 'Listado de Bailarines';
+        $bailarines = $this->bailarinObj->getAllBailarines();
+        
+        // Calcular edad para cada bailarín
+        foreach($bailarines as &$bailarin) {
+            $bailarin['edad'] = $this->bailarinObj->calcularEdad($bailarin['fec_nac']);
+        }
+        
         return [
-            'bailarines' => $this->bailarinObj->getAllBailarines(),
+            'bailarines' => $bailarines,
             'fraternidades' => $this->fraternidadObj->getAllFraternidades()
         ];
     }
@@ -33,9 +40,13 @@ class bailarinController{
             ];
             
             if($this->bailarinObj->createBailarin($data)){
-                // Asignar a fraternidad si se seleccionó
-                if(isset($_POST['id_fraternidad'])){
-                    $this->bailarinObj->asignarFraternidad($_POST['ci_bailarin'], $_POST['id_fraternidad']);
+                // Asignar a fraternidades si se seleccionaron
+                if(isset($_POST['id_fraternidad']) && is_array($_POST['id_fraternidad'])){
+                    foreach($_POST['id_fraternidad'] as $id_fraternidad){
+                        if(!empty($id_fraternidad)){
+                            $this->bailarinObj->asignarFraternidad($_POST['ci_bailarin'], $id_fraternidad);
+                        }
+                    }
                 }
                 header("Location: index.php?controller=bailarinController&funcion=listar");
             }
@@ -57,12 +68,34 @@ class bailarinController{
             ];
             
             if($this->bailarinObj->updateBailarin($ci, $data)){
+                // Actualizar fraternidades
+                if(isset($_POST['id_fraternidad']) && is_array($_POST['id_fraternidad'])){
+                    // Primero eliminar todas las fraternidades actuales
+                    $fraternidadesActuales = $this->bailarinObj->getFraternidadesByBailarin($ci);
+                    foreach($fraternidadesActuales as $fraternidad){
+                        $this->bailarinObj->eliminarFraternidad($ci, $fraternidad['id_fraternidad']);
+                    }
+                    
+                    // Luego agregar las nuevas fraternidades
+                    foreach($_POST['id_fraternidad'] as $id_fraternidad){
+                        if(!empty($id_fraternidad)){
+                            $this->bailarinObj->asignarFraternidad($ci, $id_fraternidad);
+                        }
+                    }
+                }
+                
                 header("Location: index.php?controller=bailarinController&funcion=listar");
             }
         }
         
+        $bailarin = $this->bailarinObj->getBailarinById($ci);
+        if($bailarin) {
+            $bailarin['edad'] = $this->bailarinObj->calcularEdad($bailarin['fec_nac']);
+        }
+        
         return [
-            'bailarin' => $this->bailarinObj->getBailarinById($ci),
+            'bailarin' => $bailarin,
+            'fraternidades_bailarin' => $this->bailarinObj->getFraternidadesByBailarin($ci),
             'fraternidades' => $this->fraternidadObj->getAllFraternidades()
         ];
     }
@@ -73,6 +106,23 @@ class bailarinController{
             header("Location: index.php?controller=bailarinController&funcion=listar");
         }
         return [];
+    }
+    
+    public function detalle(){
+        $this->tituloVista = 'Detalle del Bailarín';
+        $this->view = "bailarines/bailarinDetalle";
+        
+        $ci = $_GET['ci'] ?? null;
+        
+        $bailarin = $this->bailarinObj->getBailarinById($ci);
+        if($bailarin) {
+            $bailarin['edad'] = $this->bailarinObj->calcularEdad($bailarin['fec_nac']);
+        }
+        
+        return [
+            'bailarin' => $bailarin,
+            'fraternidades' => $this->bailarinObj->getFraternidadesByBailarin($ci)
+        ];
     }
 }
 ?>
