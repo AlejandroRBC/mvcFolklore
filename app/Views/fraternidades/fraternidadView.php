@@ -74,11 +74,13 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="index.php?controller=fraternidadController&funcion=editar&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-primary">Editar</a>
-                            <a href="index.php?controller=fraternidadController&funcion=gestionarBailarines&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-info">Bailarines</a>
-                            <a href="index.php?controller=fraternidadController&funcion=eliminar&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-danger" onclick="return confirm('¿Está seguro de eliminar esta fraternidad? Se eliminarán todos los bailarines asociados.')">Eliminar</a>
-                        </td>
-                    </tr>
+    <a href="index.php?controller=fraternidadController&funcion=detalle&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-info">Ver</a>
+    <a href="index.php?controller=fraternidadController&funcion=editar&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-primary">Editar</a>
+    <?php if(isset($_SESSION['logged_in'])): ?>
+        <a href="index.php?controller=puntuacionController&funcion=puntuar&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-warning">Puntuar</a>
+    <?php endif; ?>
+    <a href="index.php?controller=fraternidadController&funcion=eliminar&id=<?php echo $fraternidad['id_fraternidad']; ?>" class="btn btn-danger" onclick="return confirm('¿Está seguro de eliminar esta fraternidad? Se eliminarán todos los bailarines asociados.')">Eliminar</a>
+</td>
             <?php endforeach; 
             else: ?>
                 <tr>

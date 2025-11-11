@@ -1,4 +1,7 @@
-<?php 
+    <?php 
+
+    // Iniciar sesión al principio del archivo
+    session_start();    
     require_once 'app/config/config.php';
     require_once 'app/models/db.php';
 

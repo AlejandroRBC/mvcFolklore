@@ -67,3 +67,29 @@ CREATE TABLE ES_DE (
     FOREIGN KEY (id_baile) REFERENCES BAILE(id_baile),
     FOREIGN KEY (id_departamento) REFERENCES DEPARTAMENTO(id_departamento)
 );
+
+
+-- Crear tabla USUARIO
+CREATE TABLE USUARIO (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    activo TINYINT(1) DEFAULT 1,
+    es_admin TINYINT(1) DEFAULT 0
+);
+
+-- Crear tabla PUNTUA (relación M:N entre USUARIO y FRATERNIDAD)
+CREATE TABLE PUNTUA (
+    id_fraternidad INT,
+    id_usuario INT,
+    puntuacion INT NOT NULL CHECK (puntuacion >= 1 AND puntuacion <= 5),
+    fecha_puntuacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    comentario TEXT,
+    PRIMARY KEY (id_fraternidad, id_usuario),
+    FOREIGN KEY (id_fraternidad) REFERENCES FRATERNIDAD(id_fraternidad) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE
+);

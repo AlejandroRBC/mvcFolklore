@@ -102,5 +102,26 @@ class fraternidadController{
             'todos_bailarines' => $this->bailarinObj->getAllBailarines()
         ];
     }
+    public function detalle(){
+        $this->tituloVista = 'Detalle de Fraternidad';
+        $this->view = "fraternidades/fraternidadDetalle";
+        
+        $id = $_GET['id'] ?? null;
+        
+        if(!$id){
+            return ['error' => 'Fraternidad no especificada'];
+        }
+        
+        $fraternidad = $this->fraternidadObj->getFraternidadById($id);
+        if(!$fraternidad){
+            return ['error' => 'Fraternidad no encontrada'];
+        }
+        
+        return [
+            'fraternidad' => $fraternidad,
+            'bailarines' => $this->fraternidadObj->getBailarinesByFraternidad($id),
+            'bailes' => $this->baileObj->getAllBailes()
+        ];
+    }
 }
 ?>

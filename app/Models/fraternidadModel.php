@@ -94,5 +94,20 @@ class fraternidadModel{
         $stmt = $this->conection->prepare($sql);
         return $stmt->execute([$id_fraternidad, $ci_bailarin]);
     }
+    public function getFraternidadConPuntuaciones($id){
+        $this->getConection();
+        $sql = "SELECT f.*, 
+                       b.nombre as nombre_baile,
+                       AVG(p.puntuacion) as promedio_puntuacion,
+                       COUNT(p.puntuacion) as total_puntuaciones
+                FROM ".$this->nombreTabla." f 
+                LEFT JOIN baile b ON f.id_baile = b.id_baile
+                LEFT JOIN puntua p ON f.id_fraternidad = p.id_fraternidad
+                WHERE f.id_fraternidad = ?
+                GROUP BY f.id_fraternidad";
+        $stmt = $this->conection->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
 }
 ?>
