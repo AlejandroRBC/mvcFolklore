@@ -82,12 +82,5 @@ class puntuacionModel{
         return $stmt->fetchAll();
     }
     
-    public function eliminarPuntuacion($id_fraternidad, $id_usuario){
-        $this->getConection();
-        $sql = "DELETE FROM ".$this->nombreTabla." 
-                WHERE id_fraternidad = ? AND id_usuario = ?";
-        $stmt = $this->conection->prepare($sql);
-        return $stmt->execute([$id_fraternidad, $id_usuario]);
-    }
 }
 ?>
